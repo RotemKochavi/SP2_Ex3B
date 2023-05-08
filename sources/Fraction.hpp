@@ -3,12 +3,13 @@
 #include <sstream>
 #include <stdexcept>
 #include <math.h>
-#include <iostream>
 #include <cmath>
 #include <numeric>
 #include <algorithm>
 #include <climits>
 #include <typeinfo>
+#include <limits>
+
 using namespace std;
 
 namespace ariel {
@@ -18,38 +19,17 @@ namespace ariel {
         int numerator;
         int denominator;
 
-//////////////////////// - overflow - //////////////////////////////////////////////////
-
-        static int overflow_addit(int number1, int number2) {
-            if ((number2 > 0 && number1 > (INT_MAX - number2)) || (number2 < 0 && number1 < (INT_MIN - number2)))
-                throw std::overflow_error("Addition overflow");
-            
-            return (number1 + number2);
-        }
-        static int overflow_subtract(int number1, int number2) {
-            if ((number2 < 0 && number1 > INT_MAX + number2) || (number2 > 0 && number1 < INT_MIN + number2))
-                throw overflow_error("Subtract overflow");
-                    
-            return (number1 - number2);
-        }
-        static int overflow_divide(int number1, int number2) {
-            if (number2 == 0 || (number1 == INT_MIN && number2 == -1))
-                throw overflow_error("Divide overflow");
-
-            return (number1 / number2);
-        }
-        static int overflow_multiplicat(int number1, int number2) {
-            if ((number2 > 0 && number1 > INT_MAX / number2) || (number2 < 0 && number1 < INT_MIN / number2))
-                throw overflow_error("Multiplicat overflow");
-                    
-            return (number1 * number2);
-        }
-
     public:
         Fraction();
         Fraction(int numerator, int denominator);
+        Fraction(const Fraction& other);
+        Fraction(Fraction&& other) noexcept;
         Fraction(float);
-        int __gcd(int a, int b) const;
+        ~Fraction() = default;
+
+        Fraction& operator=(const Fraction& other) ;
+        Fraction& operator=(Fraction&& other) noexcept;
+
         void reduce();
 
         int getNumerator() const;
@@ -58,8 +38,8 @@ namespace ariel {
         void setDenominator(int denominator);
         
         const Fraction operator+(const Fraction& number1) const;
+        const Fraction operator+(const float &number) const;
         friend const Fraction operator+(const float& number1, const Fraction& number2);
-        friend const Fraction operator+(const Fraction& number1, const float& number2);
         
         const Fraction operator-(const Fraction& number1) const;
         const Fraction operator-(const float& number1) const;
@@ -67,51 +47,63 @@ namespace ariel {
 
         
         const Fraction operator/(const Fraction& number1) const;
-        const Fraction operator/(const float& number1);
+        const Fraction operator/(const float& number1)const;
         friend const Fraction operator/(const float& number1, const Fraction& number2);
 
 
         const Fraction operator*(const Fraction& number1) const;
-        const Fraction operator*(const float& number1);
+        const Fraction operator*(const float& number1)const;
         friend const Fraction operator*(const float& number1,const Fraction& number2);
-
-
-        Fraction operator++(int number);
-        Fraction operator--(int number);
-
-        Fraction operator++();
-        Fraction operator--();
         
         bool operator>(const Fraction& number1) const;
-        friend bool operator>(const float& number1, const Fraction& number2);
-        friend bool operator>(const Fraction& number1, float number2);
+        bool operator>(const float& other) const;
+        friend bool operator>( const float& number1, const Fraction& number2);
 
         bool operator<(const Fraction& number1) const;
+        bool operator<(const float& other) const;
         friend bool operator<(const float& number1, const Fraction& number2);
-        friend bool operator<(const Fraction& number1, float number2);
 
         bool operator>=(const Fraction& number1) const;
+        bool operator>=(const float& other) const;
         friend bool operator>= (const float& number1, const Fraction& number2);
-        friend bool operator<= (const Fraction& number1, float number2);
 
         bool operator<=(const Fraction& number1) const;
+        bool operator<=(const float& other) const;
         friend bool operator<= (const float& number1, const Fraction& number2);
-        friend bool operator<= (const Fraction& number1, float number2);
 
         bool operator==(const Fraction& number1) const;
-        friend bool operator==( const Fraction &number1,  const float number2) ;
-        friend bool operator==( const float number1,  const Fraction &number2);
-        
+        bool operator==(const float& other) const ;
+        friend bool operator==( const float& number1,  const Fraction &number2);
+
         bool operator!=(const Fraction& number1) const;
-        friend bool operator!=( const Fraction &number1,  const float number2) ;
-        friend bool operator!=( const float number1,  const Fraction &number2);
-        
+        bool operator!=(const float& other) const;
+        friend bool operator!=( const float& number1,  const Fraction &number2);
+
         friend ostream& operator<< (ostream& output, Fraction const& frac);
         friend istream& operator>> (istream& input, Fraction& frac);
         
-        Fraction& operator=(const Fraction& other) ;
+        //prefix
+        Fraction& operator++(){
+            numerator += denominator;
+            return *this;
+        }
+        Fraction& operator--(){
+            numerator -= denominator;
+            return *this;
+        }
 
-        
+        //postfix
+        Fraction operator++(int number){
+            Fraction temp = *this;
+            numerator += denominator;
+            return temp;
+        }
+        Fraction operator--(int number){
+            Fraction temp = *this;
+            numerator -= denominator;
+            return temp;
+        }
+   
     };
 
 }
